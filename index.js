@@ -1,7 +1,7 @@
 const express = require("express");
 const dotenv = require("dotenv");
 const cors = require("cors");
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 dotenv.config();
 
 const uri = process.env.MONGODB_URI;
@@ -28,12 +28,26 @@ async function run() {
     const db = client.db("booknook");
     const roomCollection = db.collection("rooms");
 
+    // create GET API
+    app.get("/room", async (req, res) => {
+      const result = await roomCollection.find().toArray();
+      res.json(result);
+    });
+
     // create post API
     app.post("/room", async (req, res) => {
       const roomData = req.body;
       console.log(roomData);
       const result = await roomCollection.insertOne(roomData);
 
+      res.json(result);
+    });
+
+    // create GET API for single id, for details page
+    app.get("/room/:id", async (req, res) => {
+      const { id } = req.params;
+
+      const result = await roomCollection.findOne({ _id: new ObjectId(id) });
       res.json(result);
     });
 
