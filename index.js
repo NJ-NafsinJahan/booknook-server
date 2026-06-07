@@ -51,6 +51,23 @@ async function run() {
       res.json(result);
     });
 
+    // Create PATCH API for edit details page information
+    app.patch("/room/:id", async (req, res) => {
+      const { id } = req.params;
+      const updatedData = req.body;
+
+      if (!ObjectId.isValid(id)) {
+        return res.status(400).json({ message: "Invalid ID format" });
+      }
+
+      const result = await roomCollection.updateOne(
+        { _id: new ObjectId(id) },
+        { $set: updatedData },
+      );
+
+      res.json(result);
+    });
+
     // ******************---------***********
     await client.db("admin").command({ ping: 1 });
     console.log(
