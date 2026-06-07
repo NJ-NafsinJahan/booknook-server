@@ -68,6 +68,14 @@ async function run() {
       res.json(result);
     });
 
+    // create Delete API for delete any Specific room
+    app.delete("/room/:id", async (req, res) => {
+      const { id } = req.params;
+      const result = await roomCollection.deleteOne({ _id: new ObjectId(id) });
+
+      res.json(result);
+    });
+
     // ******************---------***********
     await client.db("admin").command({ ping: 1 });
     console.log(
