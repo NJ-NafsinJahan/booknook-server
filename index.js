@@ -27,6 +27,7 @@ async function run() {
     // create database
     const db = client.db("booknook");
     const roomCollection = db.collection("rooms");
+    const bookingsCollection = db.collection("bookings");
 
     // create GET API
     app.get("/room", async (req, res) => {
@@ -72,6 +73,14 @@ async function run() {
     app.delete("/room/:id", async (req, res) => {
       const { id } = req.params;
       const result = await roomCollection.deleteOne({ _id: new ObjectId(id) });
+
+      res.json(result);
+    });
+
+    // Create POST API for booking data collection
+    app.post("/booking", async (req, res) => {
+      const bookingData = req.body;
+      const result = await bookingsCollection.insertOne(bookingData);
 
       res.json(result);
     });
