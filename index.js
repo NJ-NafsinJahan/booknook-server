@@ -69,7 +69,7 @@ async function run() {
     });
 
     // create post API
-    app.post("/room", async (req, res) => {
+    app.post("/room", verifyToken, async (req, res) => {
       const roomData = req.body;
       console.log(roomData);
       const result = await roomCollection.insertOne(roomData);
@@ -86,7 +86,7 @@ async function run() {
     });
 
     // Create PATCH API for edit details page information
-    app.patch("/room/:id", async (req, res) => {
+    app.patch("/room/:id", verifyToken, async (req, res) => {
       const { id } = req.params;
       const updatedData = req.body;
 
@@ -103,7 +103,7 @@ async function run() {
     });
 
     // create Delete API for delete any Specific room
-    app.delete("/room/:id", async (req, res) => {
+    app.delete("/room/:id", verifyToken, async (req, res) => {
       const { id } = req.params;
       const result = await roomCollection.deleteOne({ _id: new ObjectId(id) });
 
@@ -111,7 +111,7 @@ async function run() {
     });
 
     // Create GET API for booking data collection
-    app.get("/booking/:userId", async (req, res) => {
+    app.get("/booking/:userId", verifyToken, async (req, res) => {
       const { userId } = req.params;
 
       const result = await bookingsCollection
@@ -121,7 +121,7 @@ async function run() {
     });
 
     // Create POST API for booking data collection
-    app.post("/booking", async (req, res) => {
+    app.post("/booking", verifyToken, async (req, res) => {
       const bookingData = req.body;
       const result = await bookingsCollection.insertOne(bookingData);
 
@@ -129,7 +129,7 @@ async function run() {
     });
 
     // Create DELETE API for booking data collection
-    app.delete("/booking/:bookingId", async (req, res) => {
+    app.delete("/booking/:bookingId", verifyToken, async (req, res) => {
       const { bookingId } = req.params;
       const result = await bookingsCollection.deleteOne({
         _id: new ObjectId(bookingId),
