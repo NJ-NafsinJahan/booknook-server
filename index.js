@@ -2,6 +2,7 @@ const express = require("express");
 const dotenv = require("dotenv");
 const cors = require("cors");
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
+const { createRemoteJWKSet, jwtVerify } = require("jose-cjs");
 dotenv.config();
 
 const uri = process.env.MONGODB_URI;
@@ -19,6 +20,38 @@ const client = new MongoClient(uri, {
     deprecationErrors: true,
   },
 });
+
+// jw key set ||JWKS
+const JWKS = createRemoteJWKSet(new URL("http://localhost:3000/api/auth/jwks"));
+
+// common middleware for verify token||jwt
+const verifyToken = async (req, res, next) => {
+  const authHeader = req?.headers.authorization;
+  // console.log(authHeader);
+  if (!authHeader) {
+    return res
+      .status(401)
+      .json({ message: "Unauthorized: you are not logged in" });
+  }
+  const token = authHeader.split(" ")[1];
+  if (!token) {
+    return res
+      .status(401)
+      .json({ message: "Unauthorized: you are not logged in" });
+  }
+  console.log(token);
+
+  // Verify
+  try {
+    const { payload } = await jwtVerify(token, JWKS);
+    console.log(payload);
+    next();
+  } catch (error) {
+    return res
+      .status(403)
+      .json({ message: "Forbidden:Token validation failed" });
+  }
+};
 
 async function run() {
   try {
@@ -45,26 +78,12 @@ async function run() {
     });
 
     // create GET API for single id, for details page || middleWare
-    app.get(
-      "/room/:id",
-      (req, res, next) => {
-        const header = req.headers.authorization;
-        console.log(header);
-        if (header === "logged in") {
-          next();
-        } else {
-          res
-            .status(401)
-            .json({ message: "Unauthorized: you are not logged in" });
-        }
-      },
-      async (req, res) => {
-        const { id } = req.params;
+    app.get("/room/:id", verifyToken, async (req, res) => {
+      const { id } = req.params;
 
-        const result = await roomCollection.findOne({ _id: new ObjectId(id) });
-        res.json(result);
-      },
-    );
+      const result = await roomCollection.findOne({ _id: new ObjectId(id) });
+      res.json(result);
+    });
 
     // Create PATCH API for edit details page information
     app.patch("/room/:id", async (req, res) => {
