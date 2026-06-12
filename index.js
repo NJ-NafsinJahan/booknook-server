@@ -44,13 +44,27 @@ async function run() {
       res.json(result);
     });
 
-    // create GET API for single id, for details page
-    app.get("/room/:id", async (req, res) => {
-      const { id } = req.params;
+    // create GET API for single id, for details page || middleWare
+    app.get(
+      "/room/:id",
+      (req, res, next) => {
+        const header = req.headers.authorization;
+        console.log(header);
+        if (header === "logged in") {
+          next();
+        } else {
+          res
+            .status(401)
+            .json({ message: "Unauthorized: you are not logged in" });
+        }
+      },
+      async (req, res) => {
+        const { id } = req.params;
 
-      const result = await roomCollection.findOne({ _id: new ObjectId(id) });
-      res.json(result);
-    });
+        const result = await roomCollection.findOne({ _id: new ObjectId(id) });
+        res.json(result);
+      },
+    );
 
     // Create PATCH API for edit details page information
     app.patch("/room/:id", async (req, res) => {
@@ -77,10 +91,30 @@ async function run() {
       res.json(result);
     });
 
+    // Create GET API for booking data collection
+    app.get("/booking/:userId", async (req, res) => {
+      const { userId } = req.params;
+
+      const result = await bookingsCollection
+        .find({ userId: userId })
+        .toArray();
+      res.json(result);
+    });
+
     // Create POST API for booking data collection
     app.post("/booking", async (req, res) => {
       const bookingData = req.body;
       const result = await bookingsCollection.insertOne(bookingData);
+
+      res.json(result);
+    });
+
+    // Create DELETE API for booking data collection
+    app.delete("/booking/:bookingId", async (req, res) => {
+      const { bookingId } = req.params;
+      const result = await bookingsCollection.deleteOne({
+        _id: new ObjectId(bookingId),
+      });
 
       res.json(result);
     });
