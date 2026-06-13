@@ -123,6 +123,27 @@ async function run() {
     // Create POST API for booking data collection
     app.post("/booking", verifyToken, async (req, res) => {
       const bookingData = req.body;
+
+      // Booking conflict
+
+      const { roomId, date, startTime, endTime } = bookingData;
+      const conflict = await bookingsCollection.findOne({
+        roomId,
+        date,
+        $and: [
+          { startTime: { $lt: endTime } },
+          { endTime: { $gt: startTime } },
+        ],
+      });
+
+      if (conflict) {
+        return res.status(409).json({
+          success: false,
+          message: "Time slot already booked",
+        });
+      }
+
+      // ***
       const result = await bookingsCollection.insertOne(bookingData);
 
       res.json(result);
