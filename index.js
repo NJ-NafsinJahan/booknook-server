@@ -39,7 +39,7 @@ const verifyToken = async (req, res, next) => {
       .status(401)
       .json({ message: "Unauthorized: you are not logged in" });
   }
-  console.log(token);
+  // console.log(token);
 
   // Verify
   try {
@@ -159,15 +159,27 @@ async function run() {
       res.json(result);
     });
 
-    // ************* for rooms & my-listings combined****
+    // ************* for rooms & my-listings combined  & search****
     app.get("/room", async (req, res) => {
       try {
         const email = req.query.email;
+        const search = req.query.search;
+        const amenities = req.query.amenities;
 
         let query = {};
         if (email && email !== "undefined") {
           query = { email: email };
         }
+        // ***
+        if (search) {
+          query.roomName = { $regex: search, $options: "i" };
+        }
+
+        if (amenities) {
+          const amenitiesArray = amenities.split(",");
+          query.amenities = { $in: amenitiesArray };
+        }
+        // ***
         const result = await roomCollection.find(query).toArray();
         res.json(result);
       } catch (error) {
