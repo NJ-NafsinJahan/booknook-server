@@ -22,7 +22,9 @@ const client = new MongoClient(uri, {
 });
 
 // jw key set ||JWKS
-const JWKS = createRemoteJWKSet(new URL("http://localhost:3000/api/auth/jwks"));
+const JWKS = createRemoteJWKSet(
+  new URL(`${process.env.CLIENT_URI}/api/auth/jwks`),
+);
 
 // common middleware for verify token||jwt
 const verifyToken = async (req, res, next) => {
@@ -55,7 +57,7 @@ const verifyToken = async (req, res, next) => {
 
 async function run() {
   try {
-    await client.connect();
+    // await client.connect();
 
     // create database
     const db = client.db("booknook");
@@ -188,8 +190,14 @@ async function run() {
       }
     });
 
+    // create GET api for "featured data"
+    app.get("/featured", async (req, res) => {
+      const result = await roomCollection.find().limit(6).toArray();
+      res.json(result);
+    });
+
     // ******************---------***********
-    await client.db("admin").command({ ping: 1 });
+    // await client.db("admin").command({ ping: 1 });
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!",
     );
