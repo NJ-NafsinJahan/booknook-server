@@ -63,10 +63,10 @@ async function run() {
     const bookingsCollection = db.collection("bookings");
 
     // create GET API
-    app.get("/room", async (req, res) => {
-      const result = await roomCollection.find().toArray();
-      res.json(result);
-    });
+    // app.get("/room", async (req, res) => {
+    //   const result = await roomCollection.find().toArray();
+    //   res.json(result);
+    // });
 
     // create post API
     app.post("/room", verifyToken, async (req, res) => {
@@ -157,6 +157,23 @@ async function run() {
       });
 
       res.json(result);
+    });
+
+    // ************* for rooms & my-listings combined****
+    app.get("/room", async (req, res) => {
+      try {
+        const email = req.query.email;
+
+        let query = {};
+        if (email && email !== "undefined") {
+          query = { email: email };
+        }
+        const result = await roomCollection.find(query).toArray();
+        res.json(result);
+      } catch (error) {
+        console.error("GET Room Error:", error);
+        res.status(500).json({ message: "Internal server error" });
+      }
     });
 
     // ******************---------***********
